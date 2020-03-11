@@ -36,7 +36,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"gopkg.in/ini.v1"
 
-	"github.com/prometheus/mysqld_exporter/collector"
+	"github.com/viettelidc-oss/mysqld_exporter/collector"
 )
 
 var (
@@ -65,11 +65,12 @@ var (
 
 // scrapers lists all possible collection methods and if they should be enabled by default.
 var scrapers = map[collector.Scraper]bool{
+	collector.MacAddrHosts{}:                              true,
 	collector.ScrapeGlobalStatus{}:                        true,
 	collector.ScrapeGlobalVariables{}:                     true,
 	collector.ScrapeSlaveStatus{}:                         true,
 	collector.ScrapeProcesslist{}:                         false,
-	collector.ScrapeUser{}:                                false,
+	collector.ScrapeUser{}:                                true,
 	collector.ScrapeTableSchema{}:                         false,
 	collector.ScrapeInfoSchemaInnodbTablespaces{}:         false,
 	collector.ScrapeInnodbMetrics{}:                       false,

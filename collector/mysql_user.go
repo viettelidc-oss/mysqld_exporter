@@ -20,6 +20,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"net"
 
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
@@ -96,6 +97,11 @@ var (
 		prometheus.BuildFQName(namespace, mysql, "max_user_connections"),
 		"The number of max_user_connections by user.",
 		labelNames, nil)
+	MacAddrHostsInfos = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, heartbeat, "mysql_mac_user_hosts_info"),
+		"Information about running macAddress",
+		[]string{"mac_host"}, nil,
+	)
 )
 
 // ScrapeUser collects from `information_schema.processlist`.
@@ -114,6 +120,21 @@ func (ScrapeUser) Help() string {
 // Version of MySQL from which scraper is available.
 func (ScrapeUser) Version() float64 {
 	return 5.1
+}
+
+func getMacAdds() string {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		panic("Failed to parse interface")
+	}
+	for _, i := range ifaces {
+		macAdd := i.HardwareAddr.String()
+		nameIf := i.Name
+		if "ens3" == nameIf {
+			return macAdd
+		}
+	}
+	return ""
 }
 
 // Scrape collects data from database connection and sends it over channel as prometheus metric.
@@ -247,6 +268,14 @@ func (ScrapeUser) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.M
 		ch <- prometheus.MustNewConstMetric(userMaxConnectionsDesc, prometheus.GaugeValue, float64(max_connections), user, host)
 		ch <- prometheus.MustNewConstMetric(userMaxUserConnectionsDesc, prometheus.GaugeValue, float64(max_user_connections), user, host)
 	}
+
+	macHost := getMacAdds()
+	ch <- prometheus.MustNewConstMetric(
+		MacAddrHostsInfos,
+		prometheus.GaugeValue,
+		1,
+		macHost,
+	)
 
 	return nil
 }
