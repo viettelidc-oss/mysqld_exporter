@@ -67,6 +67,12 @@ func getMacAdd() string {
 	return ""
 }
 
+
+func GetMacHost() string {
+	macHosted := getMacAdd()
+	return macHosted
+}
+
 func (MacAddrHosts) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.Metric, logger log.Logger) error {
 	macHosts := getMacAdd()
 

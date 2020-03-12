@@ -19,12 +19,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
-	"net"
-
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"strings"
 )
 
 const mysqlUserQuery = `
@@ -76,7 +74,7 @@ var (
 )
 
 var (
-	labelNames = []string{"mysql_user", "hostmask"}
+	labelNames = []string{"mysql_user", "hostmask", "mac_host"}
 )
 
 // Metric descriptors.
@@ -122,20 +120,20 @@ func (ScrapeUser) Version() float64 {
 	return 5.1
 }
 
-func getMacAdds() string {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		panic("Failed to parse interface")
-	}
-	for _, i := range ifaces {
-		macAdd := i.HardwareAddr.String()
-		nameIf := i.Name
-		if "ens3" == nameIf {
-			return macAdd
-		}
-	}
-	return ""
-}
+//func getMacAdds() string {
+//	ifaces, err := net.Interfaces()
+//	if err != nil {
+//		panic("Failed to parse interface")
+//	}
+//	for _, i := range ifaces {
+//		macAdd := i.HardwareAddr.String()
+//		nameIf := i.Name
+//		if "ens3" == nameIf {
+//			return macAdd
+//		}
+//	}
+//	return ""
+//}
 
 // Scrape collects data from database connection and sends it over channel as prometheus metric.
 func (ScrapeUser) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.Metric, logger log.Logger) error {
@@ -149,6 +147,8 @@ func (ScrapeUser) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.M
 		return err
 	}
 	defer userRows.Close()
+
+	macHost := GetMacHost()
 
 	var (
 		user                   string
@@ -257,19 +257,18 @@ func (ScrapeUser) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.M
 						),
 						prometheus.GaugeValue,
 						value,
-						user, host,
+						user, host, macHost,
 					)
 				}
 			}
 		}
 
-		ch <- prometheus.MustNewConstMetric(userMaxQuestionsDesc, prometheus.GaugeValue, float64(max_questions), user, host)
-		ch <- prometheus.MustNewConstMetric(userMaxUpdatesDesc, prometheus.GaugeValue, float64(max_updates), user, host)
-		ch <- prometheus.MustNewConstMetric(userMaxConnectionsDesc, prometheus.GaugeValue, float64(max_connections), user, host)
-		ch <- prometheus.MustNewConstMetric(userMaxUserConnectionsDesc, prometheus.GaugeValue, float64(max_user_connections), user, host)
+		ch <- prometheus.MustNewConstMetric(userMaxQuestionsDesc, prometheus.GaugeValue, float64(max_questions), user, host, macHost)
+		ch <- prometheus.MustNewConstMetric(userMaxUpdatesDesc, prometheus.GaugeValue, float64(max_updates), user, host, macHost)
+		ch <- prometheus.MustNewConstMetric(userMaxConnectionsDesc, prometheus.GaugeValue, float64(max_connections), user, host, macHost)
+		ch <- prometheus.MustNewConstMetric(userMaxUserConnectionsDesc, prometheus.GaugeValue, float64(max_user_connections), user, host, macHost)
 	}
 
-	macHost := getMacAdds()
 	ch <- prometheus.MustNewConstMetric(
 		MacAddrHostsInfos,
 		prometheus.GaugeValue,
