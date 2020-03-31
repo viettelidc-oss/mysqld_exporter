@@ -12,6 +12,8 @@ elif [[ -f "/home/trove/.proxy.end" && -f "/home/trove/.guestagent.prepare.end" 
     mysql -uadmin -padmin -P 6032 -e "LOAD MYSQL USERS TO RUNTIME;"
     #mysql -P 6032 -e "SAVE MYSQL USERS TO DISK" -- No need to save to disk since we sync every 5s
 elif [[ ! -f "/home/trove/.proxy.end" && -f "/home/trove/.guestagent.prepare.end" ]]; then
+    sed '10s/3306/9999/' /etc/mysql/my.cnf >> /etc/mysql/my.cnf
+    systemctl restart mariadb.service
     /bin/bash /etc/proxysql_setup.sh
 else
     echo "Ignore ...."
