@@ -30,3 +30,8 @@ sudo mysql -uadmin -padmin -P 6032 -e "SAVE MYSQL QUERY RULES TO DISK;"
 #Setup cron task
 echo "* * * * * /etc/proxysql_modified.sh" >> /etc/proxysqlcron
 /usr/bin/crontab /etc/proxysqlcron
+
+sed 's/127.0.0.1:3306/127.0.0.1:9999/' /opt/guest-agent-venv/lib/python3.5/site-packages/trove/guestagent/datastore/mysql_common/service.py >> /home/trove/service.py && sudo mv /home/trove/service.py /opt/guest-agent-venv/lib/python3.5/site-packages/trove/guestagent/datastore/mysql_common/service.py
+sudo systemctl restart guest-agent.service
+
+touch /home/trove/.proxySQL.done
