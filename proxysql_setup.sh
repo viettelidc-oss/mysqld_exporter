@@ -6,7 +6,7 @@ sleep 60
 
 done
 
-sed '10s/3306/9999/' /etc/mysql/my.cnf >> /home/trove/my_bak.cnf && sudo mv /home/trove/my_bak.cnf /etc/mysql/my.cnf
+sed 's/port = 3306/port = 9999/' /etc/mysql/my.cnf >> /home/trove/my_bak.cnf && sudo mv /home/trove/my_bak.cnf /etc/mysql/my.cnf
 sudo systemctl restart mariadb.service
 
 sudo echo "port = 9999" >> /home/trove/.my.cnf
