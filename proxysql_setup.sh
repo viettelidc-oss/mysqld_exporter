@@ -10,7 +10,9 @@ sed 's/port = 3306/port = 9999/' /etc/mysql/my.cnf >> /home/trove/my_bak.cnf && 
 sudo systemctl restart mariadb.service
 sudo systemctl restart mysql
 
-sudo echo "port = 9999" >> /home/trove/.my.cnf
+if [`grep "^port = 9999" /home/trove/.my.cnf | wc -l` == 0]; then
+sudo echo "port = 9999" >> /home/trove/.my.cnf;
+fi
 
 sudo dpkg -i /etc/proxysql_modified.deb
 
