@@ -10,7 +10,7 @@ sed 's/port = 3306/port = 9999/' /etc/mysql/my.cnf >> /home/trove/my_bak.cnf && 
 sudo systemctl restart mariadb.service
 sudo systemctl restart mysql
 
-if [`grep "^port = 9999" /home/trove/.my.cnf | wc -l` == 0]; then
+if [ `grep "^port = 9999" /home/trove/.my.cnf | wc -l` == 0 ]; then
 sudo echo "port = 9999" >> /home/trove/.my.cnf;
 fi
 
